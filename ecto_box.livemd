@@ -1,0 +1,83 @@
+<!-- livebook:{"autosave_interval_s":30,"persist_outputs":true} -->
+
+# ecto_box
+
+```elixir
+# Mix.install([
+#   {:req, "~> 0.3.11"}
+# ])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Usage example
+
+```elixir
+defmodule GithubClient do
+  import EctoBox
+  import EctoBox.HttpResponseMapper, only: [extract_body: 3]
+
+  defschema Owner do
+    field(:id, :integer)
+    field(:login, :string)
+  end
+
+  defschema Repository do
+    field(:full_name, :string)
+    field(:has_downloads, :boolean)
+    field(:owner, Owner)
+  end
+
+  defschema Error do
+    field(:message, :string)
+  end
+
+  @type error :: Error.t() | Exception.t() | atom
+
+  @spec get_public_repo(binary()) :: {:ok, Repository.t()} | {:error, error()}
+  def get_public_repo(name) do
+    "https://api.github.com/repos/#{name}"
+    |> Req.get()
+    |> extract_body(Repository, Error)
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, GithubClient, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:get_public_repo, 1}}
+```
+
+The request below returns `HTTP 200` - and should be converted into `Repository` schema:
+
+```elixir
+GithubClient.get_public_repo("wojtekmach/req")
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:ok,
+ %GithubClient.Repository{
+   full_name: "wojtekmach/req",
+   has_downloads: true,
+   owner: %GithubClient.Owner{id: 76071, login: "wojtekmach"}
+ }}
+```
+
+While this request returns `HTTP 400` and will be converted to `Error` schema:
+
+```elixir
+GithubClient.get_public_repo("foo/bar")
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:error, %GithubClient.Error{message: "Not Found"}}
+```
