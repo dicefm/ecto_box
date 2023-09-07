@@ -40,6 +40,7 @@ defmodule EctoBoxTest do
     test "handles integers" do
       assert {:ok, _} = MyBox.load(%{"int" => nil})
       assert {:ok, _} = MyBox.load(%{"int" => 42})
+      assert {:ok, _} = MyBox.load(%{"int" => "42"})
 
       capture_log(fn ->
         assert :error = MyBox.load(%{"int" => "foobar"})
@@ -54,6 +55,7 @@ defmodule EctoBoxTest do
 
       capture_log(fn ->
         assert :error = MyBox.load(%{"float" => "foobar"})
+        assert :error = MyBox.load(%{"int" => "42_foobar"})
         assert :error = MyBox.load(%{"float" => %{}})
       end)
     end
