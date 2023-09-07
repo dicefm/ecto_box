@@ -13,6 +13,7 @@ defmodule EctoBox do
     def loaders(:naive_datetime, type), do: [&load_naive_datetime/1, type]
     def loaders(:uuid, type), do: [&load_binary/1, type]
     def loaders(:binary, type), do: [&load_binary/1, type]
+    def loaders(:integer, type), do: [&load_integer/1, type]
 
     # implement other types as needed:
     def loaders(:date, _), do: raise("Not implemented")
@@ -40,6 +41,15 @@ defmodule EctoBox do
 
     defp load_binary(b) when is_binary(b), do: {:ok, b}
     defp load_binary(_), do: :error
+
+    defp load_integer(b) when is_binary(b) do
+      case Integer.parse(b) do
+        {i, ""} -> {:ok, i}
+        _any -> :error
+      end
+    end
+
+    defp load_integer(_), do: :error
   end
 
   defmodule Any do
